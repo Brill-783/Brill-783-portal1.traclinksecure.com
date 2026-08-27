@@ -1,0 +1,85 @@
+// src/common/util/impersonation.js
+//
+// Single source of truth for the "admin logs in as another user, then
+// returns to their own admin session" flow. Previously this logic was
+// half-written directly inside UsersPage.jsx's handleLogin, and there was
+// NO corresponding code anywhere to reverse it — which is why logout never
+// switched back to the admin account. Everything now lives here so both
+// UsersPage.jsx and your logout button can share the same source of truth.
+
+import fetchOrThrow from './fetchOrThrow';
+import { sessionActions, devicesActions } from '../../store';
+
+const BACKUP_ID_KEY = 'admin_session_backup_id';
+const BACKUP_EMAIL_KEY = 'admin_session_backup_email';
+const IMPERSONATED_ID_KEY = 'impersonated_user_id';
+const IMPERSONATED_EMAIL_KEY = 'impersonated_user_email';
+
+// Is the currently active session an admin impersonating someone else?
+export const isImpersonating = () => Boolean(localStorage.getItem(BACKUP_ID_KEY));
+
+export const getImpersonationInfo = () => ({
+  backupAdminId: localStorage.getItem(BACKUP_ID_KEY),
+  backupAdminEmail: localStorage.getItem(BACKUP_EMAIL_KEY),
+  impersonatedUserId: localStorage.getItem(IMPERSONATED_ID_KEY),
+  impersonatedUserEmail: localStorage.getItem(IMPERSONATED_EMAIL_KEY),
+});
+
+const clearImpersonationFlags = () => {
+  localStorage.removeItem(BACKUP_ID_KEY);
+  localStorage.removeItem(BACKUP_EMAIL_KEY);
+  localStorage.removeItem(IMPERSONATED_ID_KEY);
+  localStorage.removeItem(IMPERSONATED_EMAIL_KEY);
+};
+
+// Call this when an admin clicks "Login as" on a user row.
+export const startImpersonation = async (currentUser, targetUserId, dispatch) => {
+  if (currentUser?.id && String(currentUser.id) !== String(targetUserId)) {
+    localStorage.setItem(BACKUP_ID_KEY, String(currentUser.id));
+    localStorage.setItem(BACKUP_EMAIL_KEY, String(currentUser.email || currentUser.login || 'Admin'));
+  }
+
+  const response = await fetchOrThrow(`/api/session/${targetUserId}`);
+  const sessionUser = await response.json();
+
+  localStorage.setItem(IMPERSONATED_ID_KEY, String(targetUserId));
+  localStorage.setItem(IMPERSONATED_EMAIL_KEY, String(sessionUser.email || sessionUser.login || ''));
+
+  if (devicesActions?.selectId) dispatch(devicesActions.selectId(null));
+  if (devicesActions?.clear) dispatch(devicesActions.clear());
+  dispatch(sessionActions.updateUser(sessionUser));
+
+  return sessionUser;
+};
+
+// Call this to switch back to the original admin session.
+// Returns the restored admin user, or null if there was nothing to return to.
+export const returnToAdmin = async (dispatch) => {
+  const backupId = localStorage.getItem(BACKUP_ID_KEY);
+  if (!backupId) return null;
+
+  const response = await fetchOrThrow(`/api/session/${backupId}`);
+  const adminUser = await response.json();
+
+  clearImpersonationFlags();
+
+  if (devicesActions?.selectId) dispatch(devicesActions.selectId(null));
+  if (devicesActions?.clear) dispatch(devicesActions.clear());
+  dispatch(sessionActions.updateUser(adminUser));
+
+  return adminUser;
+};
+
+// Drop-in replacement for your logout button's onClick handler.
+// If the admin is currently impersonating someone, this switches back to
+// the admin account instead of logging out completely. Otherwise it does
+// nothing and returns false, so the caller should fall through to its
+// normal logout call (e.g. DELETE /api/session).
+export const logoutOrReturnToAdmin = async (dispatch, navigate) => {
+  if (isImpersonating()) {
+    await returnToAdmin(dispatch);
+    if (navigate) navigate('/settings/users');
+    return true;
+  }
+  return false;
+};

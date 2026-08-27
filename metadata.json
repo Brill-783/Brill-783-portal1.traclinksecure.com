@@ -1,0 +1,6 @@
+{
+  "name": "Traclink GPS Portal",
+  "description": "GPS vehicle tracking and fleet management portal",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
