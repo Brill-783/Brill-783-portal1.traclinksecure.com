@@ -33,7 +33,7 @@ import {
   startImpersonation,
   isImpersonating,
   getImpersonationInfo,
-  returnToAdmin,
+  stopImpersonation,
 } from '../../common/util/impersonation';
 
 const UsersPage = () => {
@@ -60,7 +60,7 @@ const UsersPage = () => {
   });
 
   const handleReturnToAdmin = useCatch(async () => {
-    await returnToAdmin(dispatch);
+    await stopImpersonation(dispatch);
     navigate('/settings/users');
   });
 

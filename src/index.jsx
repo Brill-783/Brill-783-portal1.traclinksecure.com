@@ -17,7 +17,7 @@ import AppThemeProvider from './AppThemeProvider';
 
 preloadImages();
 
-const FONT_FAMILY = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important';
+const FONT_FAMILY = "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important";
 
 const root = createRoot(document.getElementById('root'));
 root.render(

@@ -12,6 +12,7 @@ export default defineConfig(() => ({
   server: {
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: 'all',
 
     proxy: {
       '/api/socket': {
@@ -95,9 +96,9 @@ export default defineConfig(() => ({
       },
 
       manifest: {
-        short_name: '${title}',
-        name: '${description}',
-        theme_color: '${colorPrimary}',
+        short_name: 'Traclink GPS Portal',
+        name: 'Traclink GPS Portal',
+        theme_color: '#00a79d',
 
         icons: [
           {

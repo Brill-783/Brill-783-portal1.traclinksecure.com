@@ -33,7 +33,7 @@ import {
   volumeUnitString,
 } from '../../common/util/converter';
 import useFeatures from '../../common/util/useFeatures';
-import useSettingsStyles from '../common/useSettingsStyles';
+import useSettingsStyles from '../theme/useSettingsStyles';
 
 const EditAttributesAccordion = ({
   attribute,

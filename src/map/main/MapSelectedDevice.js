@@ -13,7 +13,7 @@ import SettingsMenu from './components/SettingsMenu';
 import { formatNotificationTitle } from '../common/util/formatter';
 import PageLayout from '../common/components/PageLayout';
 import useFeatures from '../common/util/useFeatures';
-import useSettingsStyles from './common/useSettingsStyles';
+import useSettingsStyles from '../../common/theme/useSettingsStyles';
 
 const DeviceConnectionsPage = () => {
   const { classes } = useSettingsStyles();

@@ -475,6 +475,9 @@ export default function ServerPage() {
     }
   });
 
+  const impersonatedUserId = localStorage.getItem('impersonated_user_id');
+  const isSuperAdmin = Boolean(currentUser && (currentUser.administrator || currentUser.admin || currentUser.id === 1) && !impersonatedUserId);
+
   const primaryButtonSx = {
     height: '36px',
     px: 2.5,
@@ -736,26 +739,25 @@ export default function ServerPage() {
         )}
       </Box>
 
-      <Box sx={{ mt: 'auto', pt: 1, px: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', width: '100%', flexShrink: 0, gap: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <DnsOutlinedIcon sx={{ fontSize: 14, color: primaryColor }} />
-            <span style={{ color: '#64748b', fontSize: 11.5 }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: 11.5 }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <InfoOutlinedIcon sx={{ fontSize: 14, color: primaryColor }} />
-            <span style={{ color: '#64748b', fontSize: 11.5 }}>Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: 11.5 }}>v{serverVersion}</strong>
+      {isSuperAdmin && (
+        <Box sx={{ mt: 'auto', pt: 1, px: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e2e8f0', width: '100%', flexShrink: 0, gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DnsOutlinedIcon sx={{ fontSize: 14, color: primaryColor }} />
+              <span style={{ color: '#64748b', fontSize: 11.5 }}>Server:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: 11.5 }}>{serverHostIp}</strong>
+            </Box>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <InfoOutlinedIcon sx={{ fontSize: 14, color: primaryColor }} />
+              <span style={{ color: '#64748b', fontSize: 11.5 }}>Version:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: 11.5 }}>v{serverVersion}</strong>
+            </Box>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', px: 1.2, py: 0.3, borderRadius: '20px' }}>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
-          <span style={{ fontSize: 11.5, fontWeight: 600, color: '#047857' }}>Server Core Online</span>
-        </Box>
-      </Box>
+      )}
     </Box>
+
   );
 }
 

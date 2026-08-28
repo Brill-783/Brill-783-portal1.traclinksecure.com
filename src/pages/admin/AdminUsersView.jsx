@@ -48,11 +48,12 @@ import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 import Swal from 'sweetalert2';
+import { startImpersonation } from '../../common/util/impersonation';
 
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import fetchOrThrow from '../../common/util/fetchOrThrow';
-import { startImpersonation } from '../../common/util/impersonation';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
+import { usersActions } from '../../store';
 
 const FONT_FAMILY =
   '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -306,92 +307,113 @@ const UserTableRow = memo(({ user, isCurrentActiveUser, liveLoginTime, deviceCou
           pr: { xs: 0.8, sm: 1.5 },
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: { xs: 0.5, sm: 1 } }}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onLogin(user);
-            }}
-            style={{
-              fontFamily: FONT_FAMILY,
-              fontSize: '11.5px',
-              fontWeight: 600,
-              padding: '3px 8px',
-              borderRadius: '5px',
-              border: '1.5px solid #bfdbfe',
-              backgroundColor: '#eff6ff',
-              color: '#1d4ed8',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#dbeafe';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#eff6ff';
-            }}
-          >
-            Login
-          </button>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: '100px', gap: { xs: 0.5, sm: 1 } }}>
+          {isCurrentActiveUser ? (
+            <Chip
+              label="Current Account"
+              size="small"
+              sx={{
+                height: { xs: '22px', sm: '24px' },
+                fontSize: { xs: '10px', sm: '11px' },
+                fontWeight: 700,
+                backgroundColor: '#fef3c7',
+                color: '#d97706',
+                border: '1.5px solid #fde68a',
+                borderRadius: '5px',
+                ...fontStyle,
+              }}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLogin(user);
+              }}
+              style={{
+                fontFamily: FONT_FAMILY,
+                fontSize: '11.5px',
+                fontWeight: 600,
+                padding: '3px 8px',
+                borderRadius: '5px',
+                border: '1.5px solid #bfdbfe',
+                backgroundColor: '#eff6ff',
+                color: '#1d4ed8',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#dbeafe';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#eff6ff';
+              }}
+            >
+              Login
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(user);
-            }}
-            style={{
-              fontFamily: FONT_FAMILY,
-              fontSize: '11.5px',
-              fontWeight: 600,
-              padding: '3px 10px',
-              borderRadius: '5px',
-              border: `1.5px solid ${BORDER}`,
-              backgroundColor: '#f8fafc',
-              color: '#1e293b',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#e2e8f0';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8fafc';
-            }}
-          >
-            Edit
-          </button>
+          {!isCurrentActiveUser && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(user);
+                }}
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '11.5px',
+                  fontWeight: 600,
+                  padding: '3px 10px',
+                  borderRadius: '5px',
+                  border: `1.5px solid ${BORDER}`,
+                  backgroundColor: '#f8fafc',
+                  color: '#1e293b',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#e2e8f0';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f8fafc';
+                }}
+              >
+                Edit
+              </button>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(user.id);
-            }}
-            style={{
-              fontFamily: FONT_FAMILY,
-              fontSize: '11.5px',
-              fontWeight: 600,
-              padding: '3px 10px',
-              borderRadius: '5px',
-              border: '1.5px solid #fecaca',
-              backgroundColor: '#fef2f2',
-              color: '#dc2626',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#fee2e2';
-              e.currentTarget.style.color = '#b91c1c';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#fef2f2';
-              e.currentTarget.style.color = '#dc2626';
-            }}
-          >
-            Delete
-          </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(user.id);
+                }}
+                style={{
+                  fontFamily: FONT_FAMILY,
+                  fontSize: '11.5px',
+                  fontWeight: 600,
+                  padding: '3px 10px',
+                  borderRadius: '5px',
+                  border: '1.5px solid #fecaca',
+                  backgroundColor: '#fef2f2',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fee2e2';
+                  e.currentTarget.style.color = '#b91c1c';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fef2f2';
+                  e.currentTarget.style.color = '#dc2626';
+                }}
+              >
+                Delete
+              </button>
+            </>
+          )}
         </Box>
       </TableCell>
     </TableRow>
@@ -407,14 +429,15 @@ export default function AdminUsersView() {
   const hiddenDateInputRef = useRef(null);
 
   const currentUser = useSelector((state) => state.session?.user, shallowEqual);
+  const impersonatedUserId = localStorage.getItem('impersonated_user_id');
+  const isSuperAdmin = Boolean((currentUser?.administrator || currentUser?.admin || currentUser?.id === 1) && !impersonatedUserId);
   const server = useSelector((state) => state.session?.server || {}, shallowEqual);
   const reduxDevices = useSelector((state) => state.devices?.items || {}, shallowEqual);
 
   const serverVersion = server?.version || '6.0';
   const serverHostIp = window.location.hostname || '127.0.0.1';
 
-  const [users, setUsers] = useState([]);
-  const [deviceUserMap, setDeviceUserMap] = useState({});
+  const reduxUsers = useSelector((state) => state.users?.items || {}, shallowEqual);
   const [userLoginAuditMap, setUserLoginAuditMap] = useState({});
   const [searchKeyword, setSearchKeyword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -432,6 +455,15 @@ export default function AdminUsersView() {
   const [userAdmin, setUserAdmin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const users = useMemo(() => {
+    return Object.values(reduxUsers).sort((a, b) => {
+      if (a.administrator !== b.administrator) {
+        return a.administrator ? -1 : 1;
+      }
+      return (a.name || a.email || '').localeCompare(b.name || b.email || '');
+    });
+  }, [reduxUsers]);
+
   const allDevicesList = useMemo(() => {
     return Array.isArray(reduxDevices)
       ? reduxDevices
@@ -443,15 +475,14 @@ export default function AdminUsersView() {
     const totalCount = allDevicesList.length;
 
     allDevicesList.forEach((d) => {
-      if (Array.isArray(d?.userIds)) {
-        d.userIds.forEach((uId) => {
-          counts[uId] = (counts[uId] || 0) + 1;
-        });
-      }
-    });
-
-    Object.entries(deviceUserMap).forEach(([uId, count]) => {
-      counts[uId] = Math.max(counts[uId] || 0, count);
+      const deviceUserIds = Array.isArray(d?.userIds)
+        ? d.userIds
+        : Array.isArray(d?.users)
+        ? d.users
+        : [];
+      deviceUserIds.forEach((uId) => {
+        counts[uId] = (counts[uId] || 0) + 1;
+      });
     });
 
     users.forEach((u) => {
@@ -463,7 +494,7 @@ export default function AdminUsersView() {
     });
 
     return counts;
-  }, [allDevicesList, deviceUserMap, users]);
+  }, [allDevicesList, users]);
 
   // Real-time login sync with backend database
   useEffect(() => {
@@ -498,55 +529,28 @@ export default function AdminUsersView() {
     try {
       const usersRes = await fetchOrThrow('/api/users');
       const usersData = await usersRes.json();
-      const normalizedUsers = Array.isArray(usersData)
-        ? usersData
-        : Object.values(usersData || {});
+      dispatch(usersActions.refresh(usersData));
 
-      setUsers(normalizedUsers);
-
-      const counts = {};
       const loginTimes = {};
-      const nonAdminUsers = normalizedUsers.filter(
-        (u) => !u.administrator && !u.admin && u.id !== 1
-      );
-
-      // Query live reports and device mappings concurrently
-      await Promise.all([
-        ...nonAdminUsers.map(async (u) => {
-          try {
-            const devRes = await fetch(`/api/devices?userId=${u.id}`, {
-              credentials: 'include',
-            });
-            if (devRes.ok) {
-              const devData = await devRes.json();
-              if (Array.isArray(devData)) {
-                counts[u.id] = devData.length;
+      try {
+        const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // Last 30 days
+        const auditRes = await fetch(`/api/reports/events?type=userLogin&from=${fromDate}`, {
+          credentials: 'include',
+        });
+        if (auditRes.ok) {
+          const auditData = await auditRes.json();
+          if (Array.isArray(auditData)) {
+            auditData.forEach((evt) => {
+              if (evt.userId && evt.eventTime) {
+                if (!loginTimes[evt.userId] || new Date(evt.eventTime) > new Date(loginTimes[evt.userId])) {
+                  loginTimes[evt.userId] = evt.eventTime;
+                }
               }
-            }
-          } catch {}
-        }),
-        (async () => {
-          try {
-            const auditRes = await fetch('/api/reports/events?type=userLogin', {
-              credentials: 'include',
             });
-            if (auditRes.ok) {
-              const auditData = await auditRes.json();
-              if (Array.isArray(auditData)) {
-                auditData.forEach((evt) => {
-                  if (evt.userId && evt.eventTime) {
-                    if (!loginTimes[evt.userId] || new Date(evt.eventTime) > new Date(loginTimes[evt.userId])) {
-                      loginTimes[evt.userId] = evt.eventTime;
-                    }
-                  }
-                });
-              }
-            }
-          } catch {}
-        })()
-      ]);
+          }
+        }
+      } catch {}
 
-      setDeviceUserMap(counts);
       if (Object.keys(loginTimes).length > 0) {
         setUserLoginAuditMap(loginTimes);
       }
@@ -562,7 +566,7 @@ export default function AdminUsersView() {
     } finally {
       if (!isBackground) setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchUsers(false);
@@ -816,16 +820,10 @@ export default function AdminUsersView() {
 
     const result = await showAlert({
       icon: 'question',
-      title: `Login as ${user.name}`,
-      html: `
-        <div style="font-family:${FONT_FAMILY};font-size:13px;line-height:1.6">
-          You will temporarily enter this user's account.
-          <br/>
-          You will only see the devices, groups, alerts, reports and other data belonging to this account.
-        </div>
-      `,
+      title: 'Login Confirmation',
+      text: 'Are you sure you want to login to this user account?',
       showCancelButton: true,
-      confirmButtonText: 'Login as User',
+      confirmButtonText: 'Yes',
       cancelButtonText: 'Cancel',
       confirmButtonColor: PRIMARY,
       cancelButtonColor: '#64748b',
@@ -844,7 +842,7 @@ export default function AdminUsersView() {
       showAlert({
         icon: 'error',
         title: 'Login Failed',
-        text: error?.message || 'Unable to switch to this user account.',
+        text: error?.message || 'Unable to switch to this user account context.',
         confirmButtonColor: PRIMARY,
       });
     }
@@ -1186,62 +1184,38 @@ export default function AdminUsersView() {
       </Paper>
 
       {/* Footer System Status Bar */}
-      <Box
-        sx={{
-          mt: 'auto',
-          pt: { xs: '6px', sm: '10px' },
-          pb: '2px',
-          px: { xs: '2px', sm: '6px' },
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          justifyContent: 'space-between',
-          borderTop: '1px solid #e2e8f0',
-          width: '100%',
-          flexShrink: 0,
-          gap: { xs: 0.5, sm: 0 },
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <DnsOutlinedIcon sx={{ fontSize: '14px', color: '#00ab8e' }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <InfoOutlinedIcon sx={{ fontSize: '14px', color: '#00ab8e' }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
-          </Box>
-        </Box>
-
+      {isSuperAdmin && (
         <Box
           sx={{
+            mt: 'auto',
+            pt: { xs: '6px', sm: '10px' },
+            pb: '2px',
+            px: { xs: '2px', sm: '6px' },
             display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            px: { xs: 1, sm: 1.4 },
-            py: 0.4,
-            borderRadius: '20px',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            borderTop: '1px solid #e2e8f0',
+            width: '100%',
+            flexShrink: 0,
+            gap: { xs: 0.5, sm: 0 },
           }}
         >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px rgba(16, 185, 129, 0.8)',
-            }}
-          />
-          <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#047857', letterSpacing: '0.2px', ...fontStyle }}>
-            Live Connection Active
-          </span>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DnsOutlinedIcon sx={{ fontSize: '14px', color: '#00ab8e' }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
+            </Box>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <InfoOutlinedIcon sx={{ fontSize: '14px', color: '#00ab8e' }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* FULLY RESPONSIVE POPUP MODAL */}
       <Dialog

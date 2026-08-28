@@ -22,7 +22,7 @@ const LOGOUT_CODE = 4000;
 const INITIAL_RETRY_DELAY = 3000;
 const MAX_RETRY_DELAY = 30000;
 const MAX_STACKED_TOASTS = 5;
-const FONT_FAMILY = "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
+const FONT_FAMILY = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
 const getEventIcon = (type) => {
   switch (type) {
@@ -70,7 +70,9 @@ const formatEventTitle = (event, deviceName) => {
 const SocketController = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const authenticated = useSelector((state) => Boolean(state.session?.user));
+  const user = useSelector((state) => state.session?.user);
+  const userId = user?.id;
+  const authenticated = Boolean(user);
   const includeLogs = useSelector((state) => state.session?.includeLogs);
   const devices = useSelector((state) => state.devices?.items || {});
   const geofences = useSelector((state) => state.geofences?.items || {});
@@ -294,6 +296,11 @@ const SocketController = () => {
   useEffect(() => {
     if (authenticated) {
       nativePostMessage('authenticated');
+      // Force clean reconnection if user ID changed
+      if (socketRef.current) {
+        try { socketRef.current.close(); } catch {}
+        socketRef.current = null;
+      }
       connectSocket();
     } else {
       clearReconnectTimeout();
@@ -315,7 +322,7 @@ const SocketController = () => {
         socketRef.current = null;
       }
     };
-  }, [authenticated, connectSocket, clearReconnectTimeout, dispatch]);
+  }, [authenticated, userId, connectSocket, clearReconnectTimeout, dispatch]);
 
   const handleNativeNotification = useCatchCallback(
     async (message) => {

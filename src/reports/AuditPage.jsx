@@ -116,6 +116,9 @@ export default function AuditPage() {
   const t = useTranslation();
 
   const server = useSelector((state) => state.session?.server || {}, shallowEqual);
+  const currentUser = useSelector((state) => state.session?.user, shallowEqual);
+  const impersonatedUserId = localStorage.getItem('impersonated_user_id');
+  const isSuperAdmin = Boolean(currentUser && (currentUser.administrator || currentUser.admin || currentUser.id === 1) && !impersonatedUserId);
   const users = useSelector((state) => state.users?.items || {}, shallowEqual);
 
   const serverVersion = server?.version || '6.0';
@@ -428,63 +431,38 @@ export default function AuditPage() {
       </Paper>
 
       {/* Footer System Status Bar */}
-      <Box
-        sx={{
-          mt: 'auto',
-          pt: { xs: '6px', sm: '10px' },
-          pb: '2px',
-          px: { xs: '2px', sm: '6px' },
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          justifyContent: 'space-between',
-          borderTop: '1px solid #e2e8f0',
-          width: '100%',
-          flexShrink: 0,
-          gap: { xs: 0.5, sm: 0 },
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <DnsOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <InfoOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
-          </Box>
-        </Box>
-
+      {isSuperAdmin && (
         <Box
           sx={{
+            mt: 'auto',
+            pt: { xs: '6px', sm: '10px' },
+            pb: '2px',
+            px: { xs: '2px', sm: '6px' },
             display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            px: { xs: 1, sm: 1.4 },
-            py: 0.4,
-            borderRadius: '20px',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            borderTop: '1px solid #e2e8f0',
+            width: '100%',
+            flexShrink: 0,
+            gap: { xs: 0.5, sm: 0 },
           }}
         >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px rgba(16, 185, 129, 0.8)',
-              animation: 'livePulse 1.5s infinite ease-in-out',
-            }}
-          />
-          <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#047857', letterSpacing: '0.2px', ...fontStyle }}>
-            Audit Logger Active
-          </span>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DnsOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
+            </Box>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <InfoOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 }

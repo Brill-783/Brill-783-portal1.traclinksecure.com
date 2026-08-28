@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Typography, IconButton, Toolbar, Paper, TextField } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { default as Hls, Events } from 'hls.js/light';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
@@ -49,6 +49,10 @@ const StreamPage = () => {
   const [searchParams] = useSearchParams();
   const deviceId = searchParams.get('deviceId');
   const device = useSelector((state) => state.devices.items[deviceId]);
+
+  if (!device) {
+    return <Navigate to="/cameras" replace />;
+  }
 
   const playing = activeChannel !== null;
 

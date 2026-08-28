@@ -10,7 +10,7 @@ export default (server, darkMode, direction) => {
 
   return createTheme({
     typography: {
-      fontFamily: "'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+      fontFamily: "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
       fontSize: 12,
       htmlFontSize: 16,
       body1: { fontSize: '12px', lineHeight: 1.45, fontWeight: 400 },

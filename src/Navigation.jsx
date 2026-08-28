@@ -29,6 +29,7 @@ import {
 } from './common/components/NativeInterface';
 import { useLocalization } from './common/components/LocalizationProvider';
 import fetchOrThrow from './common/util/fetchOrThrow';
+import { isImpersonating, stopImpersonation } from './common/util/impersonation';
 
 import {
   IconButton,
@@ -68,6 +69,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import SensorsIcon from '@mui/icons-material/Sensors';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const AdminUsersView = lazy(() => import('./pages/admin/AdminUsersView'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
@@ -121,7 +123,7 @@ const ChangeServerPage = lazy(() => import('./login/ChangeServerPage'));
 
 const ROBOTO_FONT = "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
 
-const useStyles = makeStyles()((theme, { primaryColor, sidebarColor, headerColor }) => ({
+const useStyles = makeStyles()((theme, { primaryColor, sidebarColor, headerColor, isImpersonatingActive }) => ({
   layoutRoot: {
     display: 'flex',
     flexDirection: 'row',
@@ -133,6 +135,19 @@ const useStyles = makeStyles()((theme, { primaryColor, sidebarColor, headerColor
     fontSize: '12px !important',
     position: 'relative',
     touchAction: 'manipulation',
+    boxSizing: 'border-box',
+  },
+
+  impersonationIndicator: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+    border: '3px solid #f97316',
+    zIndex: 99999,
+    boxSizing: 'border-box',
   },
 
   leftNavSidebar: {
@@ -431,7 +446,8 @@ const useStyles = makeStyles()((theme, { primaryColor, sidebarColor, headerColor
     padding: '4px 8px',
     borderRadius: '7px',
     backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0',
+    border: isImpersonatingActive ? '2px solid #f97316' : '1px solid #e2e8f0',
+    boxShadow: isImpersonatingActive ? '0 0 0 2px rgba(249, 115, 22, 0.1)' : 'none',
     boxSizing: 'border-box',
     overflow: 'hidden',
     cursor: 'default',
@@ -612,6 +628,7 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
   if (!open) return null;
 
   const activeColor = buttonColor || primaryColor || '#00a79d';
+  const impersonating = isImpersonating();
 
   return createPortal(
     <Dialog
@@ -636,7 +653,7 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
           sx: {
             borderRadius: '16px',
             p: '16px 18px',
-            width: '300px',
+            width: '320px',
             maxWidth: 'calc(100vw - 32px)',
             textAlign: 'center',
             boxSizing: 'border-box',
@@ -645,8 +662,6 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
             overflow: 'hidden',
             m: 0,
             fontFamily: ROBOTO_FONT,
-            transform: 'scale(1)',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
           },
         },
       }}
@@ -657,15 +672,15 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
             width: 34,
             height: 34,
             borderRadius: '50%',
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fee2e2',
+            backgroundColor: impersonating ? '#fff7ed' : '#fef2f2',
+            border: `1px solid ${impersonating ? '#ffedd5' : '#fee2e2'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mb: 1,
           }}
         >
-          <LogoutIcon sx={{ color: '#ef4444', fontSize: '16px', ml: '2px' }} />
+          <LogoutIcon sx={{ color: impersonating ? '#f97316' : '#ef4444', fontSize: '16px', ml: '2px' }} />
         </Box>
 
         <Typography
@@ -678,12 +693,10 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
             lineHeight: 1.2,
           }}
         >
-          Log Out
+          Logout
         </Typography>
 
         <Box
-          component="form"
-          onSubmit={handleExecuteLogout}
           sx={{
             width: '100%',
             mt: 0.8,
@@ -704,7 +717,7 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
               color: '#334155',
               textAlign: 'center',
               lineHeight: 1.35,
-              mb: 1.2,
+              mb: 1.5,
               userSelect: 'none',
               fontFamily: ROBOTO_FONT,
             }}
@@ -712,56 +725,81 @@ const LogoutModal = memo(({ open, onClose, handleExecuteLogout, isLoggingOut, pr
             Are you sure you want to log out?
           </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, width: '100%' }}>
-            <Button
-              variant="outlined"
-              type="button"
-              disabled={isLoggingOut}
-              onClick={onClose}
-              fullWidth
-              sx={{
-                borderRadius: '20px',
-                border: '1px solid #cbd5e1',
-                color: '#334155',
-                backgroundColor: '#ffffff',
-                textTransform: 'none',
-                fontWeight: 600,
-                fontSize: '12px !important',
-                height: '32px',
-                fontFamily: ROBOTO_FONT,
-                '&:hover': {
-                  borderColor: '#94a3b8',
-                  backgroundColor: '#ffffff',
-                },
-              }}
-            >
-              Cancel
-            </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+            {impersonating && (
+              <Button
+                variant="contained"
+                disabled={isLoggingOut}
+                onClick={() => handleExecuteLogout(null, true)}
+                fullWidth
+                disableElevation
+                sx={{
+                  borderRadius: '20px',
+                  backgroundColor: `${activeColor} !important`,
+                  color: '#ffffff !important',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '12px !important',
+                  height: '34px',
+                  mb: 0.5,
+                  fontFamily: ROBOTO_FONT,
+                  '&:hover': {
+                    filter: 'brightness(0.92)',
+                  },
+                }}
+              >
+                Switch back to Admin
+              </Button>
+            )}
 
-            <Button
-              variant="contained"
-              type="submit"
-              disabled={isLoggingOut}
-              fullWidth
-              disableElevation
-              startIcon={isLoggingOut ? <CircularProgress size={13} sx={{ color: '#ffffff' }} /> : null}
-              sx={{
-                borderRadius: '20px',
-                backgroundColor: `${activeColor} !important`,
-                color: '#ffffff !important',
-                textTransform: 'none',
-                fontWeight: 700,
-                fontSize: '12px !important',
-                height: '32px',
-                fontFamily: ROBOTO_FONT,
-                boxShadow: '0 2px 5px rgba(0, 167, 157, 0.25)',
-                '&:hover': {
-                  filter: 'brightness(0.92)',
-                },
-              }}
-            >
-              {isLoggingOut ? 'Logging out...' : 'Log Out'}
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
+              <Button
+                variant="text"
+                disabled={isLoggingOut}
+                onClick={onClose}
+                sx={{
+                  color: '#64748b',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '12px !important',
+                  height: '34px',
+                  flex: 1,
+                  borderRadius: '20px',
+                  border: '1px solid #e2e8f0',
+                  fontFamily: ROBOTO_FONT,
+                  '&:hover': {
+                    backgroundColor: '#f8fafc',
+                    color: '#334155',
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant={impersonating ? 'outlined' : 'contained'}
+                disabled={isLoggingOut}
+                onClick={(e) => handleExecuteLogout(e, false)}
+                sx={{
+                  borderRadius: '20px',
+                  backgroundColor: impersonating ? '#ffffff !important' : `${activeColor} !important`,
+                  color: impersonating ? '#ef4444 !important' : '#ffffff !important',
+                  border: impersonating ? '1px solid #fecaca' : 'none',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '12px !important',
+                  height: '34px',
+                  flex: 1,
+                  fontFamily: ROBOTO_FONT,
+                  '&:hover': {
+                    filter: 'brightness(0.96)',
+                    backgroundColor: impersonating ? '#fef2f2 !important' : undefined,
+                  },
+                }}
+              >
+                {isLoggingOut ? 'Processing...' : 'Logout'}
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -946,8 +984,9 @@ const MainLayout = () => {
   const titleText = attributes.titleText || 'TRACKLINK';
 
   const headerLogo = attributes.frontpageLogo || attributes.loginLogo || attributes.logo || '';
+  const isImpersonatingActive = isImpersonating();
 
-  const { classes } = useStyles({ primaryColor, sidebarColor, headerColor });
+  const { classes } = useStyles({ primaryColor, sidebarColor, headerColor, isImpersonatingActive });
 
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -977,7 +1016,7 @@ const MainLayout = () => {
   }, [isMobile]);
 
   const isAdmin = Boolean(
-    user && (user.administrator || user.admin) && !user.readonly
+    user && (user.administrator || user.admin || user.id === 1) && !user.readonly && !isImpersonatingActive
   );
 
   const userMenuItems = useMemo(
@@ -1109,11 +1148,21 @@ const MainLayout = () => {
     [navigate, isMobile]
   );
 
-  const handleExecuteLogout = async (e) => {
+  const handleExecuteLogout = async (e, switchBack = false) => {
     if (e) e.preventDefault();
     setIsLoggingOut(true);
 
     try {
+      if (switchBack) {
+        const res = await stopImpersonation(dispatch);
+        if (res?.token) {
+          window.location.assign(`/?token=${encodeURIComponent(res.token)}`);
+        } else {
+          window.location.assign('/');
+        }
+        return;
+      }
+
       [
         'impersonated_user_id',
         'impersonated_user_email',
@@ -1135,15 +1184,18 @@ const MainLayout = () => {
     } catch {
     } finally {
       dispatch(devicesActions.selectId(null));
-      dispatch(sessionActions.updateUser(null));
       setIsLoggingOut(false);
       setLogoutDialogOpen(false);
-      navigate('/login', { replace: true });
+      if (!switchBack) {
+        dispatch(sessionActions.updateUser(null));
+        navigate('/login', { replace: true });
+      }
     }
   };
 
   return (
     <Box className={classes.layoutRoot}>
+      {isImpersonatingActive && <Box className={classes.impersonationIndicator} />}
       <Box
         className={[
           classes.leftNavSidebar,
@@ -1203,7 +1255,9 @@ const MainLayout = () => {
       )}
 
       <Box className={classes.mainArea}>
-        <Outlet />
+        <Suspense fallback={<PageSkeletonFallback />}>
+          <Outlet />
+        </Suspense>
       </Box>
 
       <LogoutModal
@@ -1220,7 +1274,7 @@ const MainLayout = () => {
 
 const ProtectedAdminRoute = ({ user, children }) => {
   const isAdmin = Boolean(
-    user && (user.administrator || user.admin) && !user.readonly
+    user && (user.administrator || user.admin || user.id === 1) && !user.readonly && !isImpersonating()
   );
 
   if (!isAdmin) {

@@ -82,7 +82,7 @@ const useStyles = makeStyles()((theme, { devicesOpen, isPinned, isResizing }) =>
     fontFamily: FONT_FAMILY,
     boxSizing: 'border-box',
     transition: isResizing ? 'none' : 'left 0.2s ease, max-height 0.2s ease',
-    [theme.breakpoints.down('md')]: {
+    '@media (max-width: 768px)': {
       left: 6,
       right: 6,
       bottom: 6,

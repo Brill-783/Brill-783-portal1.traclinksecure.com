@@ -194,7 +194,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   card: {
     backgroundColor: SURFACE,
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
     padding: '16px 18px',
     boxShadow: 'none',
@@ -297,7 +297,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   unitSelectionUnifiedContainer: {
     border: `1px solid ${BORDER}`,
-    borderRadius: '8px',
+    borderRadius: '12px',
     backgroundColor: SURFACE_SOFT,
     padding: '14px',
     marginBottom: '14px',
@@ -367,7 +367,7 @@ const useStyles = makeStyles()((theme) => ({
   },
   unitReportSection: {
     backgroundColor: SURFACE,
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `1px solid ${BORDER}`,
     overflow: 'hidden',
     marginBottom: '12px',
@@ -667,6 +667,9 @@ const ReportsPage = () => {
   }, [reduxDevicesObj, fetchedDevices, isSuperAdmin, effectiveUserId]);
 
   const loadAuthDevices = useCallback(async () => {
+    // Only fetch if Redux is empty or needs refresh
+    if (Object.keys(reduxDevicesObj).length > 0) return;
+    
     if (!effectiveUserId) return;
     try {
       const endpoint = isSuperAdmin
@@ -685,7 +688,7 @@ const ReportsPage = () => {
         }
       }
     } catch (e) {}
-  }, [effectiveUserId, isSuperAdmin, impersonatedUserId, dispatch]);
+  }, [effectiveUserId, isSuperAdmin, impersonatedUserId, dispatch, reduxDevicesObj]);
 
   useEffect(() => {
     loadAuthDevices();
@@ -1936,43 +1939,21 @@ const ReportsPage = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-            <DnsOutlinedIcon sx={{ fontSize: '16px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-            <InfoOutlinedIcon sx={{ fontSize: '16px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>System Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>v{serverVersion}</strong>
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            px: 1.2,
-            py: 0.4,
-            borderRadius: '20px',
-          }}
-        >
-          <Box
-            sx={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px rgba(16, 185, 129, 0.8)',
-            }}
-          />
-          <span style={{ fontSize: '12px', fontWeight: 600, color: '#047857', letterSpacing: '0.2px', ...fontStyle }}>
-            Live Connection Active
-          </span>
+          {isSuperAdmin && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                <DnsOutlinedIcon sx={{ fontSize: '16px', color: PRIMARY }} />
+                <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>Server:</span>
+                <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>{serverHostIp}</strong>
+              </Box>
+              <span style={{ color: '#cbd5e1' }}>|</span>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                <InfoOutlinedIcon sx={{ fontSize: '16px', color: PRIMARY }} />
+                <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>System Version:</span>
+                <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>v{serverVersion}</strong>
+              </Box>
+            </>
+          )}
         </Box>
       </Box>
     </Box>

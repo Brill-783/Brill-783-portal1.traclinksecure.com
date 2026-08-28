@@ -199,12 +199,13 @@ const GlobalAlertController = () => {
               }
             } catch (e) {}
 
+            const posTime = pos.deviceTime || pos.fixTime || pos.serverTime || new Date().toISOString();
             const eventRecord = {
               id: `live_${deviceId}_${now}`,
               deviceId,
               type: rule.type,
-              eventTime: new Date().toISOString(),
-              serverTime: new Date().toISOString(),
+              eventTime: posTime,
+              serverTime: pos.serverTime || posTime,
               latitude: pos.latitude,
               longitude: pos.longitude,
               altitude: pos.altitude || 0,

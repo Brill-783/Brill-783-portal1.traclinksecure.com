@@ -507,6 +507,10 @@ export default function PortsView() {
   const [activePortList, setActivePortList] = useState(DEFAULT_PORTS_LIST);
   const [isServerOnline, setIsServerOnline] = useState(true);
 
+  const currentUser = useSelector((state) => state.session?.user, shallowEqual);
+  const impersonatedUserId = localStorage.getItem('impersonated_user_id');
+  const isSuperAdmin = Boolean(currentUser && (currentUser.administrator || currentUser.admin || currentUser.id === 1) && !impersonatedUserId);
+
   // Check live server listener status
   const loadPortData = useCallback(async () => {
     try {
@@ -713,63 +717,38 @@ export default function PortsView() {
       </Paper>
 
       {/* Footer System Status Bar */}
-      <Box
-        sx={{
-          mt: 'auto',
-          pt: { xs: '6px', sm: '10px' },
-          pb: '2px',
-          px: { xs: '2px', sm: '6px' },
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          justifyContent: 'space-between',
-          borderTop: '1px solid #e2e8f0',
-          width: '100%',
-          flexShrink: 0,
-          gap: { xs: 0.5, sm: 0 },
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <DnsOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <InfoOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
-            <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
-          </Box>
-        </Box>
-
+      {isSuperAdmin && (
         <Box
           sx={{
+            mt: 'auto',
+            pt: { xs: '6px', sm: '10px' },
+            pb: '2px',
+            px: { xs: '2px', sm: '6px' },
             display: 'flex',
-            alignItems: 'center',
-            gap: 0.8,
-            backgroundColor: isServerOnline ? '#ecfdf5' : '#fef2f2',
-            border: `1px solid ${isServerOnline ? '#a7f3d0' : '#fecaca'}`,
-            px: { xs: 1, sm: 1.4 },
-            py: 0.4,
-            borderRadius: '20px',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            justifyContent: 'space-between',
+            borderTop: '1px solid #e2e8f0',
+            width: '100%',
+            flexShrink: 0,
+            gap: { xs: 0.5, sm: 0 },
           }}
         >
-          <Box
-            sx={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: isServerOnline ? '#10b981' : '#ef4444',
-              boxShadow: isServerOnline ? '0 0 6px rgba(16, 185, 129, 0.8)' : 'none',
-              animation: isServerOnline ? 'livePulse 1.5s infinite ease-in-out' : 'none',
-            }}
-          />
-          <span style={{ fontSize: '11.5px', fontWeight: 600, color: isServerOnline ? '#047857' : '#991b1b', letterSpacing: '0.2px', ...fontStyle }}>
-            {isServerOnline ? 'Live Connection Active' : 'Server Disconnected'}
-          </span>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DnsOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Server:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>{serverHostIp}</strong>
+            </Box>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <InfoOutlinedIcon sx={{ fontSize: '14px', color: PRIMARY }} />
+              <span style={{ color: '#64748b', fontSize: '11.5px', ...fontStyle }}>Version:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '11.5px', ...fontStyle }}>v{serverVersion}</strong>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 import { useSelector } from 'react-redux';
 import L from 'leaflet';
 import { usePreference } from '../../common/util/preferences';
@@ -14,20 +14,11 @@ const MapDefaultCamera = ({ filteredPositions }) => {
 
   const [initialized, setInitialized] = useState(false);
 
+  // Initial view (fleet bounds or default coordinates) - runs only once.
   useEffect(() => {
     if (initialized || !map) return;
 
-    if (selectedDeviceId) {
-      const position = positions[selectedDeviceId];
-      if (position && typeof position.latitude === 'number' && typeof position.longitude === 'number') {
-        map.setView(
-          [position.latitude, position.longitude],
-          Math.max(defaultZoom > 0 ? defaultZoom : map.getZoom() || 16, 16),
-          { animate: false }
-        );
-        setInitialized(true);
-      }
-    } else if (defaultLatitude && defaultLongitude && !isNaN(Number(defaultLatitude)) && !isNaN(Number(defaultLongitude))) {
+    if (defaultLatitude && defaultLongitude && !isNaN(Number(defaultLatitude)) && !isNaN(Number(defaultLongitude))) {
       map.setView(
         [Number(defaultLatitude), Number(defaultLongitude)],
         defaultZoom > 0 ? defaultZoom : map.getZoom() || 10,
@@ -48,7 +39,7 @@ const MapDefaultCamera = ({ filteredPositions }) => {
         if (bounds.isValid()) {
           map.fitBounds(bounds, {
             padding: [60, 60],
-            maxZoom: 16,
+            maxZoom: 18,
             animate: false,
           });
           setInitialized(true);
@@ -63,7 +54,6 @@ const MapDefaultCamera = ({ filteredPositions }) => {
       }
     }
   }, [
-    selectedDeviceId,
     initialized,
     defaultLatitude,
     defaultLongitude,
@@ -71,6 +61,30 @@ const MapDefaultCamera = ({ filteredPositions }) => {
     positions,
     filteredPositions,
   ]);
+
+  // Center the map on the selected device whenever the selection changes.
+  // A ref tracks the last centered selection so real-time position ticks and
+  // manual pan/zoom are not overridden.
+  const centeredSelection = useRef(null);
+  useEffect(() => {
+    if (!map) return;
+    if (selectedDeviceId === centeredSelection.current) return;
+
+    if (!selectedDeviceId) {
+      centeredSelection.current = selectedDeviceId;
+      return;
+    }
+
+    const position = positions[selectedDeviceId];
+    if (position && typeof position.latitude === 'number' && typeof position.longitude === 'number') {
+      map.setView(
+        [position.latitude, position.longitude],
+        Math.max(defaultZoom > 0 ? defaultZoom : map.getZoom() || 16, 16),
+        { animate: true }
+      );
+      centeredSelection.current = selectedDeviceId;
+    }
+  }, [selectedDeviceId, positions, map, defaultZoom]);
 
   return null;
 };

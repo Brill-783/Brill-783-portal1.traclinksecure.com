@@ -32,13 +32,13 @@ export const EventPopup = ({ event, device, position, onClose }) => {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 1200,
-        width: '340px',
-        maxWidth: '90vw',
+        width: '320px',
+        maxWidth: 'calc(100vw - 32px)',
         backgroundColor: '#ffffff',
-        borderRadius: '14px',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
+        borderRadius: '12px',
+        boxShadow: '0 10px 30px rgba(15, 23, 42, 0.22)',
         fontFamily: "'Roboto', -apple-system, sans-serif",
-        overflow: 'visible',
+        overflow: 'hidden',
       }}
     >
       <Box
@@ -46,69 +46,69 @@ export const EventPopup = ({ event, device, position, onClose }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: 2,
-          py: 1.2,
+          px: 1.5,
+          py: 1,
           borderBottom: '1px solid #f1f5f9',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <NavigationIcon sx={{ color: '#00a896', fontSize: '18px', transform: 'rotate(45deg)' }} />
-          <Typography noWrap sx={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+          <NavigationIcon sx={{ color: '#00a896', fontSize: '16px', transform: 'rotate(45deg)', flexShrink: 0 }} />
+          <Typography noWrap sx={{ fontSize: '13.5px', fontWeight: 800, color: '#0f172a' }}>
             {unitName}
           </Typography>
         </Box>
-        <IconButton size="small" onClick={onClose} sx={{ color: '#94a3b8', p: 0.3, '&:hover': { color: '#0f172a' } }}>
-          <CloseIcon fontSize="small" />
+        <IconButton size="small" onClick={onClose} sx={{ color: '#94a3b8', p: 0.2, ml: 1, '&:hover': { color: '#0f172a' } }}>
+          <CloseIcon sx={{ fontSize: '18px' }} />
         </IconButton>
       </Box>
 
-      <Box sx={{ px: 2, py: 1, backgroundColor: '#f0fdfa', borderBottom: '1px solid #e6f7f5' }}>
-        <Typography sx={{ fontSize: '13px', fontWeight: 700, color: '#00a896' }}>
+      <Box sx={{ px: 1.5, py: 0.8, backgroundColor: '#f0fdfa', borderBottom: '1px solid #e6f7f5' }}>
+        <Typography sx={{ fontSize: '12.5px', fontWeight: 700, color: '#00a896', lineHeight: 1.3 }}>
           ⚠️ {alertText}
         </Typography>
       </Box>
 
-      <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'flex-start' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Address</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography sx={{ fontSize: '12px', color: '#1e293b', lineHeight: 1.3 }}>
+      <Box sx={{ px: 1.5, py: 1.2, display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'flex-start' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Address</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+            <Typography sx={{ fontSize: '11.5px', color: '#1e293b', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {address}
             </Typography>
-            <VisibilityIcon sx={{ fontSize: '14px', color: '#94a3b8', flexShrink: 0 }} />
+            <VisibilityIcon sx={{ fontSize: '13px', color: '#94a3b8', flexShrink: 0 }} />
           </Box>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Preview</Typography>
-          <Link href={`https://maps.google.com/?q=${lat},${lng}`} target="_blank" underline="hover" sx={{ fontSize: '12px', color: '#0284c7', fontWeight: 600 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Preview</Typography>
+          <Link href={`https://maps.google.com/?q=${lat},${lng}`} target="_blank" underline="hover" sx={{ fontSize: '11.5px', color: '#0284c7', fontWeight: 700 }}>
             Preview &gt;&gt;
           </Link>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Latitude</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{lat}°</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Latitude</Typography>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: '#1e293b', fontFamily: 'monospace' }}>{lat}°</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Longitude</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{lng}°</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Longitude</Typography>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: '#1e293b', fontFamily: 'monospace' }}>{lng}°</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Altitude</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{altitude} m</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Altitude</Typography>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 600, color: '#1e293b' }}>{altitude} m</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Speed</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#00a896' }}>{speed} kph</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Speed</Typography>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#00a896' }}>{speed} kph</Typography>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1, alignItems: 'center' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Time</Typography>
-          <Typography sx={{ fontSize: '12px', color: '#475569' }}>{eventTime}</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: 1, alignItems: 'center' }}>
+          <Typography sx={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b' }}>Time</Typography>
+          <Typography sx={{ fontSize: '11.5px', color: '#475569', fontFamily: 'monospace' }}>{eventTime}</Typography>
         </Box>
       </Box>
 

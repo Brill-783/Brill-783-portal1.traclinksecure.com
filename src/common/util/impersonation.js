@@ -6,6 +6,9 @@ const BACKUP_EMAIL_KEY = 'admin_session_backup_email';
 const IMPERSONATED_ID_KEY = 'impersonated_user_id';
 const IMPERSONATED_EMAIL_KEY = 'impersonated_user_email';
 
+export const getBackupId = () => localStorage.getItem(BACKUP_ID_KEY);
+export const getBackupEmail = () => localStorage.getItem(BACKUP_EMAIL_KEY);
+
 export const isImpersonating = () => Boolean(localStorage.getItem(BACKUP_ID_KEY) || localStorage.getItem(IMPERSONATED_ID_KEY));
 
 export const getImpersonationInfo = () => ({
@@ -21,16 +24,13 @@ export const clearImpersonationFlags = () => {
   localStorage.removeItem(BACKUP_EMAIL_KEY);
   localStorage.removeItem(IMPERSONATED_ID_KEY);
   localStorage.removeItem(IMPERSONATED_EMAIL_KEY);
+  localStorage.removeItem('admin_token_backup');
 };
 
 const clearClientState = (dispatch) => {
-  if (devicesActions?.selectId) dispatch(devicesActions.selectId(null));
-  if (devicesActions?.clear) dispatch(devicesActions.clear());
-  if (groupsActions?.refresh) dispatch(groupsActions.refresh([]));
-  if (geofencesActions?.refresh) dispatch(geofencesActions.refresh([]));
-  if (driversActions?.refresh) dispatch(driversActions.refresh([]));
-  if (maintenancesActions?.refresh) dispatch(maintenancesActions.refresh([]));
-  if (sessionActions?.clearUserData) dispatch(sessionActions.clearUserData());
+  if (dispatch) {
+    dispatch({ type: 'RESET_STORE' });
+  }
 };
 
 const loadDevicesForCurrentUser = async (dispatch, impersonatedId = null) => {
@@ -68,6 +68,23 @@ export const startImpersonation = async (currentUser, targetUserId, dispatch) =>
     localStorage.setItem(BACKUP_ID_KEY, String(currentUser.id));
     localStorage.setItem(BACKUP_EMAIL_KEY, String(currentUser.email || currentUser.login || currentUser.name || 'Admin'));
   }
+
+  // Back up an admin session token so the original administrator session can be
+  // restored later. Once we switch to the target user, the server session loses
+  // administrator privileges and can no longer perform the switch-back itself.
+  try {
+    const tokenRes = await fetch('/api/session/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      credentials: 'include',
+      body: new URLSearchParams({
+        expiration: new Date(Date.now() + 86400000).toISOString(),
+      }),
+    });
+    if (tokenRes.ok) {
+      localStorage.setItem('admin_token_backup', (await tokenRes.text()).trim());
+    }
+  } catch {}
 
   let sessionUser = null;
   let token = null;
@@ -133,7 +150,8 @@ export const startImpersonation = async (currentUser, targetUserId, dispatch) =>
 
   clearClientState(dispatch);
   dispatch(sessionActions.updateUser(targetUser));
-  await loadDevicesForCurrentUser(dispatch, targetUserId);
+
+  window.location.assign('/');
 
   return {
     user: targetUser,
@@ -141,11 +159,28 @@ export const startImpersonation = async (currentUser, targetUserId, dispatch) =>
   };
 };
 
-export const returnToAdmin = async (dispatch) => {
+export const stopImpersonation = async (dispatch) => {
   const backupId = localStorage.getItem(BACKUP_ID_KEY);
+  const adminToken = localStorage.getItem('admin_token_backup');
   let adminUser = null;
 
-  if (backupId) {
+  // Restore the original administrator session. While impersonating, the active
+  // server session belongs to the target user (who lacks admin privileges), so the
+  // switch-back must be authenticated with the backed-up administrator token.
+  if (adminToken) {
+    try {
+      const response = await fetch(`/api/session?token=${encodeURIComponent(adminToken)}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        adminUser = await response.json();
+      }
+    } catch {}
+  }
+
+  // Fallbacks for environments where the token backup is unavailable.
+  if (!adminUser && backupId) {
     try {
       const response = await fetch(`/api/session/${backupId}`, {
         method: 'GET',
@@ -158,32 +193,35 @@ export const returnToAdmin = async (dispatch) => {
   }
 
   if (!adminUser) {
-    const response = await fetchOrThrow('/api/session', {
-      method: 'GET',
-      credentials: 'include',
-    });
-    adminUser = await response.json();
+    try {
+      const response = await fetch('/api/session', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        adminUser = await response.json();
+      }
+    } catch {}
   }
 
   const restoredUser = adminUser?.user || adminUser;
 
   clearImpersonationFlags();
-  clearClientState(dispatch);
-
-  if (restoredUser) {
-    dispatch(sessionActions.updateUser(restoredUser));
+  if (dispatch) {
+    clearClientState(dispatch);
+    if (restoredUser) {
+      dispatch(sessionActions.updateUser(restoredUser));
+    }
   }
 
-  await loadDevicesForCurrentUser(dispatch, null);
-
-  return {
-    user: restoredUser,
-  };
+  window.location.assign('/');
 };
+
+export const returnToAdmin = stopImpersonation;
 
 export const logoutOrReturnToAdmin = async (dispatch, navigate) => {
   if (isImpersonating()) {
-    await returnToAdmin(dispatch);
+    await stopImpersonation(dispatch);
     if (navigate) {
       navigate('/settings/users', { replace: true });
     }

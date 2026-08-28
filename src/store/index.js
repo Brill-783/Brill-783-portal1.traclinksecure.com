@@ -14,20 +14,38 @@ import { calendarsReducer as calendars } from './calendars';
 import { usersReducer as users } from './users';
 import throttleMiddleware from './throttleMiddleware';
 
-const reducer = combineReducers({
-  errors,
-  session,
-  devices,
-  events,
-  notifications,
-  motion,
-  geofences,
-  groups,
-  drivers,
-  maintenances,
-  calendars,
-  users,
-});
+const reducer = (state, action) => {
+  if (action.type === 'RESET_STORE') {
+    return combineReducers({
+      errors,
+      session,
+      devices,
+      events,
+      notifications,
+      motion,
+      geofences,
+      groups,
+      drivers,
+      maintenances,
+      calendars,
+      users,
+    })(undefined, action);
+  }
+  return combineReducers({
+    errors,
+    session,
+    devices,
+    events,
+    notifications,
+    motion,
+    geofences,
+    groups,
+    drivers,
+    maintenances,
+    calendars,
+    users,
+  })(state, action);
+};
 
 export { errorsActions } from './errors';
 export { sessionActions } from './session';

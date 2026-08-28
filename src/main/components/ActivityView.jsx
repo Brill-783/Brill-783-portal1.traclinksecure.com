@@ -525,11 +525,11 @@ export const showEventMapPopup = async (event, device, geofenceMap = new Map()) 
     minWidth: 290,
     maxWidth: 320,
     offset: [0, -10],
-    closeButton: false,
+    closeButton: true,
     autoPan: true,
-    autoClose: false,
-    closeOnClick: false,
-    closeOnEscapeKey: false,
+    autoClose: true,
+    closeOnClick: true,
+    closeOnEscapeKey: true,
   })
     .setLatLng([lat, lng])
     .setContent(popupHtml);

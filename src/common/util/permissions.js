@@ -1,7 +1,10 @@
 import { useSelector } from 'react-redux';
 
-export const useAdministrator = () =>
-  useSelector((state) => Boolean(state.session?.user?.administrator || state.session?.user?.admin));
+export const useAdministrator = () => {
+  const user = useSelector((state) => state.session?.user);
+  const impersonating = useSelector((state) => Boolean(state.session?.user && localStorage.getItem('impersonated_user_id')));
+  return Boolean(user && user.administrator && !impersonating);
+};
 
 export const useManager = () =>
   useSelector((state) => {

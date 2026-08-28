@@ -712,6 +712,9 @@ export default function GroupsPage() {
     }
   };
 
+  const impersonatedUserId = localStorage.getItem('impersonated_user_id');
+  const isSuperAdmin = Boolean(currentUser?.administrator && !impersonatedUserId);
+
   const totalGroups = sortedGroups.length;
   const totalPages = Math.max(1, Math.ceil(totalGroups / rowsPerPage));
   const safePage = Math.min(page, totalPages - 1);
@@ -1283,61 +1286,38 @@ export default function GroupsPage() {
       )}
 
       {/* SYSTEM STATUS FOOTER */}
-      <Box
-        sx={{
-          mt: 'auto',
-          pt: '8px',
-          pb: '2px',
-          px: '6px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderTop: '1px solid #e2e8f0',
-          width: '100%',
-          flexShrink: 0,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-            <DnsOutlinedIcon sx={{ fontSize: '16px', color: '#00ab8e' }} />
-            <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>Server:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>{serverHostIp}</strong>
-          </Box>
-          <span style={{ color: '#cbd5e1' }}>|</span>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-            <InfoOutlinedIcon sx={{ fontSize: '16px', color: '#00ab8e' }} />
-            <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>System Version:</span>
-            <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>v{serverVersion}</strong>
-          </Box>
-        </Box>
-
+      {isSuperAdmin && (
         <Box
           sx={{
+            mt: 'auto',
+            pt: '8px',
+            pb: '2px',
+            px: '6px',
             display: 'flex',
+            flexDirection: 'row',
             alignItems: 'center',
-            gap: 0.8,
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            px: 1.2,
-            py: 0.4,
-            borderRadius: '20px',
+            justifyContent: 'space-between',
+            borderTop: '1px solid #e2e8f0',
+            width: '100%',
+            flexShrink: 0,
           }}
         >
-          <Box
-            sx={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px rgba(16, 185, 129, 0.8)',
-            }}
-          />
-          <span style={{ fontSize: '12px', fontWeight: 600, color: '#047857', letterSpacing: '0.2px', ...fontStyle }}>
-            Live Connection Active
-          </span>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+              <DnsOutlinedIcon sx={{ fontSize: '16px', color: '#00ab8e' }} />
+              <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>Server:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>{serverHostIp}</strong>
+            </Box>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+              <InfoOutlinedIcon sx={{ fontSize: '16px', color: '#00ab8e' }} />
+              <span style={{ color: '#64748b', fontSize: '12px', ...fontStyle }}>System Version:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 600, fontSize: '12px', ...fontStyle }}>v{serverVersion}</strong>
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      )}
+
 
       {/* CREATE / EDIT DIALOG */}
       <Dialog

@@ -12,7 +12,7 @@ import {
 import { useCatch, useAsyncTask } from '../../reactHelper';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 import PageLayout from '../../common/components/PageLayout';
-import useSettingsStyles from '../common/useSettingsStyles';
+import useSettingsStyles from '../theme/useSettingsStyles';
 import fetchOrThrow from '../../common/util/fetchOrThrow';
 
 const EditItemView = ({

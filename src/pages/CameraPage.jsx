@@ -45,6 +45,8 @@ import Hls, { Events } from 'hls.js/light';
 import dayjs from 'dayjs';
 import { devicesActions } from '../store';
 
+import { isImpersonating } from '../common/util/impersonation';
+
 const FONT_FAMILY =
   '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
@@ -512,6 +514,9 @@ const CameraPage = () => {
 
   const reduxDevicesObj = useSelector((state) => state.devices?.items) || {};
   const positions = useSelector((state) => state.session?.positions) || {};
+  const user = useSelector((state) => state.session?.user);
+  const isImpersonatingActive = isImpersonating();
+  const isAdmin = user && (user.administrator || user.admin || user.id === 1) && !isImpersonatingActive;
 
   const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -520,7 +525,7 @@ const CameraPage = () => {
   const [success, setSuccess] = useState(null);
 
   // Tab state - 0: Configuration, 1: Live Video, 2: Voice Recordings
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(isAdmin ? 0 : 1);
 
   // Camera dropdown & config state
   const [cameraDeviceId, setCameraDeviceId] = useState('');
@@ -614,8 +619,9 @@ const CameraPage = () => {
         });
         if (!response.ok) throw new Error('Failed to load devices');
         const allDevices = await response.json();
+        const filteredDevices = allDevices.filter((d) => reduxDevicesObj[d.id]);
 
-        const cameraDevices = allDevices.filter((device) => {
+        const cameraDevices = filteredDevices.filter((device) => {
           const attrs = device.attributes || {};
           return (
             attrs.camera ||
@@ -628,7 +634,7 @@ const CameraPage = () => {
           );
         });
 
-        setCameras(cameraDevices.length ? cameraDevices : allDevices);
+        setCameras(cameraDevices.length ? cameraDevices : filteredDevices);
       } catch (err) {
         setCameras(deviceList);
       } finally {
@@ -651,9 +657,10 @@ const CameraPage = () => {
           const events = await response.json();
           const voiceEvents = events.filter(
             (event) =>
-              event.type === 'audio' ||
-              event.type === 'voice' ||
-              (event.attributes && (event.attributes.audio || event.attributes.voice))
+              (event.type === 'audio' ||
+                event.type === 'voice' ||
+                (event.attributes && (event.attributes.audio || event.attributes.voice))) &&
+              reduxDevicesObj[event.deviceId]
           );
           setVoiceRecordings(voiceEvents);
         }
@@ -931,7 +938,7 @@ const CameraPage = () => {
           onChange={(_, newValue) => setActiveTab(newValue)}
           className={classes.tabs}
         >
-          <Tab label="Configuration" />
+          {isAdmin && <Tab label="Configuration" />}
           <Tab label="Live Video" />
           <Tab label="Voice Recordings" />
         </Tabs>
